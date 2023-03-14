@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script>
+    window.addEventListener("load",init);
+
+    function init(){
+      loadEmployeeView();
+      loadEmployeeForm();
+    }
+
+    function loadEmployeeView(){
+      var http= new XMLHttpRequest();
+
+      http.onreadystatechange= function (){
+         if (this.readyState==4 && this.status==200  ){
+           showEmployee(this.responseText);
+           // var employees=JSON.parse(this.responseText); ai danne na meka uu makala thiyenne
+
+
+         }
+      }
+
+      http.open("GET","../server/employee_view.php",true);
+      http.send();
+
+    }
+
+
+
+    function loadEmployeeForm(){
+      var http= new XMLHttpRequest();
+
+      http.onreadystatechange= function (){
+        if (this.readyState==4 && this.status==200  ){
+          showGender(this.responseText);
+        }
+      }
+
+      http.open("GET","../server/gender_view.php",true);
+      http.send();
+    }
+      function showGender($json){
+        var genders=JSON.parse($json);
+        cmbGender.innerHTML="";
+        for (let i = 0; i <genders.length; i++) {
+          const gender=genders[i];
+
+          var option=document.createElement("option");
+          option.innerHTML=gender['name'];
+          option.value=gender['id'];
+            cmbGender.appendChild(option);
+
+        }
+      }
+
+
+    function showEmployee($json){
+      var employees=JSON.parse($json);
+      display.innerHTML=" ";
+      for (let i = 0; i <employees.length; i++) {
+      const employee=employees[i];
+
+      var tr=document.createElement("tr");
+
+      var tdID=document.createElement("td");
+      tdID.innerHTML=employee['id'];
+      tr.appendChild(tdID);
+
+
+        var tdName=document.createElement("td");
+        tdName.innerHTML=employee['name'];
+        tr.appendChild(tdName);
+
+        var tdAge=document.createElement("td");
+        tdAge.innerHTML=employee['age'];
+        tr.appendChild(tdAge);
+
+        var tdGender=document.createElement("td");
+        tdGender.innerHTML=employee['gender'];
+        tr.appendChild(tdGender);
+
+        var tdDelete=document.createElement("td");
+        var btnDelete=document.createElement("input");
+        btnDelete.type="button";
+        btnDelete.value="Delete";
+        btnDelete.addEventListener("click",function (){
+          deleteEmployee(employee);
+        });
+
+        tdDelete.appendChild(btnDelete);
+        tr.appendChild(btnDelete);
+
+      display.appendChild(tr);
+      }
+    }
+    function deleteEmployee(employee){
+      var confirm=window.confirm("are you sure do you want to delete "+employee['name']);
+      if (confirm){
+        var http= new XMLHttpRequest();
+
+        http.onreadystatechange= function (){
+          if (this.readyState==4 && this.status==200  ){
+            loadEmployeeView();
+          }
+        }
+        http.open("GET","../server/employee_delete.php?id="+employee['id'],true);
+        http.send();
+      }
+    }
+
+    function addEmployee(){
+      var name= txtName.value;
+      var age= txtAge.value;
+      var gender= cmbGender.value;
+
+      var confirm=window.confirm("are you sure do you want to add this employee \n\n "
+                                  +"name :"+name+"\n\n"
+                                  +"age :"+age+"\n\n"
+                                  +"gender :"+gender+"\n\n");
+      if (confirm){
+        var http= new XMLHttpRequest();
+
+        http.onreadystatechange= function (){
+          if (this.readyState==4 && this.status==200  ){
+            loadEmployeeView();
+          }
+        }
+
+        http.open("POST","../server/employee_add.php",true);
+        http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        http.send("name="+name+"&age="+age+"&gender="+gender);
+      }
+    }
+  </script>
+</head>
+<body >
+<form action="../server/employee_add.php" method="post">
+  <label>Name :</label>
+  <input id="txtName"><br><br>
+
+  <label>age :</label>
+  <input id="txtAge"><br><br>
+
+  <label>gender :</label>
+<!--  <input id="txtGender"><br><br>-->
+<select id="cmbGender">
+
+</select>
+  <input type="reset" value="clear">
+  <input onclick="addEmployee()" type="button" value="submit">
+
+
+</form>
+<p>----------------------------------------------------------------</p>
+<h1>employee view</h1>
+<table border="1" cellspacing="0" cellpadding="5" >
+  <thead>
+  <tr>
+    <th>id</th>
+    <th>name</th>
+    <th>age</th>
+    <th>gender</th>
+    <th>delete</th>
+  </tr>
+  </thead>
+  <tbody id="display">
+
+  </tbody>
+</table>
+</body>
+</html>
+
